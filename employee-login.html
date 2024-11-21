@@ -22,9 +22,7 @@
         <h2>Login Successful: Employee123</h2>
         <a href="index.html" class="button"> <button>Return Home</button></a>
         <p>Welcome Employee123.</p>
-        <p>Employee Information</p>
         <p>Employee Name: FName Middle_I LName</p>
-
         <table border="1">
             <thead>
                 <tr>
@@ -113,7 +111,7 @@
                     // Update the table with user info
                     const empTable = document.querySelector('table tbody');
                     const row = empTable.insertRow(0);
-                    row.insertCell(0).textContent = data.employee.UserID;
+                    row.insertCell(0).textContent = data.employee.EmpID;
                     row.insertCell(1).textContent = data.employee.PhoneNum;
                     row.insertCell(2).textContent = data.employee.Email;
                 } else {
