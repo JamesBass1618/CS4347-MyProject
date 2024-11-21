@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Book</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Add New Book</h1>
+
+    <div class="button-container">
+        <a href="index.html" class="button"> <button>Back to Catalog</button></a>
+    </div>
+
+    <!-- Form to add a new book -->
+    <form id="add-book-form" onsubmit="createBook(event)">
+        <label for="book-title">Title:</label>
+        <input type="text" id="book-title" name="title" required><br><br>
+
+        <label for="book-author">Author:</label>
+        <input type="text" id="book-author" name="author" required><br><br>
+
+        <label for="book-publisher">Publisher:</label>
+        <input type="text" id="book-publisher" name="publisher" required><br><br>
+
+        <label for="book-genre">Genre:</label>
+        <input type="text" id="book-genre" name="genre" required><br><br>
+
+        <label for="book-sectionnum">Section Number:</label>
+        <input type="number" id="book-sectionnum" name="sectionnum" required><br><br>
+
+        <label for="book-pubdate">Publication Date:</label>
+        <input type="date" id="book-pubdate" name="pubdate" required><br><br>
+
+        <label for="book-isrented">Is Rented?</label>
+        <select id="book-isrented" name="isrented" required>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        <button type="submit">Add Book</button>
+    </form>
+
+    <script>
+        // Function to handle form submission
+        async function createBook(event) {
+            event.preventDefault(); // Prevent form from refreshing the page
+
+            const title = document.getElementById('book-title').value;
+            const author = document.getElementById('book-author').value;
+            const publisher = document.getElementById('book-publisher').value;
+            const genre = document.getElementById('book-genre').value;
+            const pubdate = document.getElementById('book-pubdate').value;
+            const isrented = document.getElementById('book-isrented').value;
+            const sectionnum = document.getElementById('book-sectionnum') ? document.getElementById('book-sectionnum').value : null; // Optional sectionnum
+
+            // Prepare data to be sent to the backend
+            const bookData = {
+                title,
+                author,
+                publisher,
+                genre,
+                pubdate,
+                isrented: parseInt(isrented),  // Convert 'isrented' to number (1 or 0)
+                sectionnum: sectionnum || null  // Make sectionnum optional (null if not provided)
+            };
+
+            // Send the data to the backend using a POST request
+            try {
+                const response = await fetch('http://localhost:3000/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Book added successfully!');
+                    // Optionally, redirect to catalog page or clear the form
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Error adding book: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        };
+    </script>
+
+</body>
+
+</html>

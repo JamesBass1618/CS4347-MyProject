@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Database</title>
     <link rel="stylesheet" href="styles.css">
     <h1>Library Database</h1>
-    
+
     <div class="button-container">
         <a href="employee-login.html" class="button"> <button>Employee Login</button></a>
         <a href="guest-login.html" class="button"> <button>User Login</button></a>
         <a href="index.html" class="button"> <button>Book Catalog</button></a>
+        <a href="create.html" class="button"> <button>Add Book</button></a>
     </div>
-    
+
     <!--Book Catalog-->
-    <div class="book_catalog"> 
+    <div class="book_catalog">
         <h2>Book Catalog</h2>
         <input type="text" id="search-input" placeholder="Search...">
         <button type="button" id="search-button">Search</button>
@@ -33,12 +35,12 @@
                 document.getElementById('selected-option').innerText = option;
             }
         </script>
-        
+
         <!-- Table to display books -->
         <table border="1">
             <thead>
                 <tr>
-                    <th>Book ID</th>
+                    <th style="display: none;">Book ID</th>
                     <th>Author</th>
                     <th>Title</th>
                     <th>Publisher</th>
@@ -62,45 +64,50 @@
 
         // Function to search for books based on the selected search option
         function searchBooks() {
-    const option = document.getElementById('selected-option').innerText; // selected option (e.g., BookID, ISBN, etc.)
-    const value = document.getElementById('search-input').value; // search term entered by the user
+            const option = document.getElementById('selected-option').innerText; // selected option (e.g., BookID, ISBN, etc.)
+            const value = document.getElementById('search-input').value; // search term entered by the user
 
-    fetch('http://localhost:3000/get-books?option=' + option + '&value=' + value, {
-    method: 'GET',
-    headers: {
-        'Content-Type': 'application/json',  // Specify content type
-        'Accept': 'application/json'          // Accept JSON responses
-    }
-})
-.then(response => response.json())
-.then(data => {
-    const tableBody = document.getElementById('book-table-body');
-    tableBody.innerHTML = '';  // Clear previous rows
+            const url = value
+                ? `http://localhost:3000/get-books?option=${option}&value=${value}`
+                : `http://localhost:3000/get-books`;
 
-    data.forEach(book => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${book.BookID}</td>
-            <td>${book.Author}</td>
-            <td>${book.Title}</td>
-            <td>${book.Publisher}</td>
-            <td>${book.PubDate}</td>
-            <td>${book.Genre}</td>
-            <td>${book.IsRented ? 'Yes' : 'No'}</td>
-            <td>${book.SectionNum}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-})
-.catch(error => {
-    console.error('Error:', error);
-});
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',  // Specify content type
+                    'Accept': 'application/json'          // Accept JSON responses
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('book-table-body');
+                    tableBody.innerHTML = '';  // Clear previous rows
+
+                    data.forEach(book => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="display: none;">${book.BookID}</td>
+                            <td>${book.Author}</td>
+                            <td>${book.Title}</td>
+                            <td>${book.Publisher}</td>
+                            <td>${book.PubDate}</td>
+                            <td>${book.Genre}</td>
+                            <td>${book.IsRented ? 'Yes' : 'No'}</td>
+                            <td>${book.SectionNum}</td>
+                            `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
 
 
-}
+        }
 
         // Attach search function to the search button
         document.getElementById('search-button').addEventListener('click', searchBooks);
     </script>
-</body>
+    </body>
+
 </html>
