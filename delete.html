@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Book by Title</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Delete a Book</h1>
+
+    <div class="button-container">
+        <a href="index.html" class="button"> <button>Back to Catalog</button></a>
+    </div>
+
+    <!-- Form to delete a book -->
+    <form id="delete-book-form" onsubmit="deleteBook(event)">
+        <label for="book-title">Book Title:</label>
+        <input type="text" id="book-title" name="title" required><br><br>
+
+        <button type="submit">Delete Book</button>
+    </form>
+
+    <script>
+        // Function to handle book deletion by title
+        async function deleteBook(event) {
+            event.preventDefault(); // Prevent form from refreshing the page
+
+            const title = document.getElementById('book-title').value; // Get the book title from the input
+
+            // Confirm deletion
+            if (!confirm(`Are you sure you want to delete the book titled "${title}"?`)) {
+                return;
+            }
+
+            const bookData = {
+                title
+            };
+
+            try {
+                // Send DELETE request to the backend
+                const response = await fetch(`http://localhost:3000/delete-book`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookData) // Send the title in the request body
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Book deleted successfully!');
+                    window.location.href = 'index.html'; // Redirect to catalog
+                } else {
+                    alert('Error deleting book: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

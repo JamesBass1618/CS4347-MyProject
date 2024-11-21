@@ -105,6 +105,29 @@ app.post('/add-book', (req, res) => {
     });
 });
 
+// Endpoint to delete a book by title
+app.delete('/delete-book', (req, res) => {
+    console.log('Received book data:', req.body); // Log
+    let { title } = req.body; // Extract title from the request body
+    title = String(title);
+
+    const query = `DELETE FROM Book WHERE Title = ?`;
+
+    const params = [title];
+
+    db.query(query, params, (err, result) => {
+        if (err) {
+            console.error('Error deleting book:', err);
+            return res.status(500).json({ success: false, message: 'Failed to delete the book' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Book not found' });
+        }
+
+        res.json({ success: true, message: 'Book deleted successfully!' });
+    });
+});
 
 
 
