@@ -38,30 +38,69 @@ app.post('/employee-login', (req, res) => {
 // Guest login endpoint
 app.post('/guest-login', (req, res) => {
     const { username, password } = req.body;
-    const query = 'SELECT * FROM User WHERE Email = ? AND PhoneNum = ?';
 
-    db.query(query, [username, password], (err, result) => {
-        if (err) return res.status(500).send(err);
-        if (result.length > 0) {
-            res.json({ success: true, user: result[0] });
+    // Query to verify the user's credentials
+    const userQuery = 'SELECT * FROM User WHERE Email = ? AND PhoneNum = ?';
+
+    db.query(userQuery, [username, password], (err, userResult) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        console.log(userResult);
+
+        if (userResult.length > 0) {
+            const user = userResult[0];
+
+            // Query to fetch rented items for the authenticated user
+            const rentedItemsQuery = `
+                SELECT BookID, Rent_Date, Return_Date
+                FROM RentReturn
+                WHERE UserID = ?
+            `;
+
+            db.query(rentedItemsQuery, [user.UserID], (err, rentedItemsResult) => {
+                if (err) {
+                    console.error('Error fetching rented items:', err);
+                    return res.status(500).send('Error retrieving rented items');
+                }
+
+                // Respond with user details and rented items
+                res.json({
+                    success: true,
+                    user: {
+                        UserID: user.UserID,
+                        FName: user.FName,
+                        MiddleI: user.MiddleI,
+                        LName: user.LName,
+                        PhoneNum: user.PhoneNum,
+                        Email: user.Email,
+                    },
+                    rentedItems: rentedItemsResult, // List of rented items
+                });
+            });
         } else {
             res.json({ success: false, message: 'Invalid credentials.' });
         }
     });
 });
 
+
 app.get('/get-books', (req, res) => {
     const option = req.query.option; // e.g., BookID, Title
     const value = req.query.value; // Search term
 
+    const validColumns = ['BookID', 'ISBN', 'Title', 'Author', 'Publisher', 'Genre', 'IsRented', 'SectionNum'];
     let query = 'SELECT * FROM Book'; // Default: fetch all books
     let params = [];
 
-    if (option && value) {
-        query += ` WHERE ?? = ?`; // Dynamic query with column name and value
-        params = [option, value];
+    // Check if a valid column and value are provided
+    if (option && validColumns.includes(option)) {
+        query += ` WHERE ${option} = ?`;
+        params = [value];
     }
 
+    // Execute the query
     db.query(query, params, (err, results) => {
         if (err) {
             console.error(err);
@@ -70,6 +109,7 @@ app.get('/get-books', (req, res) => {
         res.json(results);
     });
 });
+
 
 // Endpoint for adding a new book
 app.post('/add-book', (req, res) => {
@@ -129,19 +169,19 @@ app.delete('/delete-book', (req, res) => {
     });
 });
 
-// Endpoint to update book details (e.g., publisher, rental status)
 app.patch('/update-book', (req, res) => {
     const { title, publisher, isrented } = req.body;
 
+    // Validate that at least the title is provided
     if (!title) {
         return res.status(400).json({ success: false, message: 'Title is required for update' });
     }
 
-    // Dynamically build the update query based on provided fields
+    // Dynamically build the `SET` clause based on provided fields
     const updates = [];
     const params = [];
 
-    if (publisher) {
+    if (publisher !== undefined) {
         updates.push('Publisher = ?');
         params.push(publisher);
     }
@@ -155,10 +195,13 @@ app.patch('/update-book', (req, res) => {
         return res.status(400).json({ success: false, message: 'No update fields provided' });
     }
 
-    params.push(title); // Add the title to the parameters for the WHERE clause
+    // Add the `title` to the `params` array for the WHERE clause
+    params.push(title);
 
+    // Construct the SQL query dynamically
     const query = `UPDATE Book SET ${updates.join(', ')} WHERE Title = ?`;
 
+    // Execute the query using prepared statements
     db.query(query, params, (err, result) => {
         if (err) {
             console.error('Error updating book:', err);
@@ -172,7 +215,6 @@ app.patch('/update-book', (req, res) => {
         res.json({ success: true, message: 'Book updated successfully!' });
     });
 });
-
 
 
 

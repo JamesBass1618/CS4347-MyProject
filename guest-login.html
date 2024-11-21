@@ -73,7 +73,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <!--Guest Login Verification-->
     <script>
         async function guest_handleLogin(event) {
@@ -113,6 +113,15 @@
                     row.insertCell(1).textContent = data.user.PhoneNum;
                     row.insertCell(2).textContent = data.user.Email;
 
+                    // Update the rented items table
+                    const rentedTable = document.querySelector('table:nth-of-type(2) tbody');
+                    rentedTable.innerHTML = ''; // Clear existing rows
+                    data.rentedItems.forEach(item => {
+                        const row = rentedTable.insertRow();
+                        row.insertCell(0).textContent = item.BookID;
+                        row.insertCell(1).textContent = item.Rent_Date;
+                        row.insertCell(2).textContent = item.Return_Date;
+                    });
                 } else {
                     alert(data.message); // Show error message
                 }

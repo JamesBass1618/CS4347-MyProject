@@ -6,18 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Database</title>
     <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
     <h1>Library Database</h1>
 
     <div class="button-container">
-        <a href="employee-login.html" class="button"> <button>Employee Login</button></a>
-        <a href="guest-login.html" class="button"> <button>User Login</button></a>
-        <a href="index.html" class="button"> <button>Book Catalog</button></a>
-        <a href="create.html" class="button"> <button>Add Book</button></a>
-        <a href="delete.html" class="button"> <button>Remove Book</button></a>
-        <a href="update.html" class="button"> <button>Update Book</button></a>
+        <a href="employee-login.html" class="button"><button>Employee Login</button></a>
+        <a href="guest-login.html" class="button"><button>User Login</button></a>
+        <a href="index.html" class="button"><button>Book Catalog</button></a>
+        <a href="create.html" class="button"><button>Add Book</button></a>
+        <a href="delete.html" class="button"><button>Remove Book</button></a>
+        <a href="update.html" class="button"><button>Update Book</button></a>
     </div>
 
-    <!--Book Catalog-->
+    <!-- Book Catalog -->
     <div class="book_catalog">
         <h2>Book Catalog</h2>
         <input type="text" id="search-input" placeholder="Search...">
@@ -30,13 +33,8 @@
                 <a href="#" onclick="setSearchOption('Title')">Title</a>
                 <a href="#" onclick="setSearchOption('Author')">Author</a>
             </div>
-            <span id="selected-option">BookID</span> <!-- Default option -->
+            <span id="selected-option">None</span> <!-- Default option -->
         </div>
-        <script>
-            function setSearchOption(option) {
-                document.getElementById('selected-option').innerText = option;
-            }
-        </script>
 
         <!-- Table to display books -->
         <table border="1">
@@ -64,52 +62,62 @@
             document.getElementById('selected-option').innerText = option;
         }
 
-        // Function to search for books based on the selected search option
-        function searchBooks() {
-            const option = document.getElementById('selected-option').innerText; // selected option (e.g., BookID, ISBN, etc.)
-            const value = document.getElementById('search-input').value; // search term entered by the user
+        // Function to search for books
+        async function searchBooks() {
+            const option = document.getElementById('selected-option').innerText;
+            const value = document.getElementById('search-input').value.trim();
 
-            const url = value
-                ? `http://localhost:3000/get-books?option=${option}&value=${value}`
-                : `http://localhost:3000/get-books`;
+            // Determine URL based on user input
+            let url;
+            if (option === 'None' && value === '') {
+                // Display all books if no search option or value is provided
+                url = 'http://localhost:3000/get-books';
+            } else if (value !== '') {
+                // Search by selected option and value
+                url = `http://localhost:3000/get-books?option=${option}&value=${encodeURIComponent(value)}`;
+            } else {
+                // If no search value but an option is selected, return all books
+                url = 'http://localhost:3000/get-books';
+            }
 
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',  // Specify content type
-                    'Accept': 'application/json'          // Accept JSON responses
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('book-table-body');
-                    tableBody.innerHTML = '';  // Clear previous rows
-
-                    data.forEach(book => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td style="display: none;">${book.BookID}</td>
-                            <td>${book.Author}</td>
-                            <td>${book.Title}</td>
-                            <td>${book.Publisher}</td>
-                            <td>${book.PubDate}</td>
-                            <td>${book.Genre}</td>
-                            <td>${book.IsRented ? 'Yes' : 'No'}</td>
-                            <td>${book.SectionNum}</td>
-                            `;
-                        tableBody.appendChild(row);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 });
 
+                const data = await response.json();
+                const tableBody = document.getElementById('book-table-body');
+                tableBody.innerHTML = ''; // Clear previous rows
 
+                data.forEach(book => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="display: none;">${book.BookID}</td>
+                        <td>${book.Author}</td>
+                        <td>${book.Title}</td>
+                        <td>${book.Publisher}</td>
+                        <td>${book.PubDate}</td>
+                        <td>${book.Genre}</td>
+                        <td>${book.IsRented ? 'Yes' : 'No'}</td>
+                        <td>${book.SectionNum}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            }
         }
 
         // Attach search function to the search button
         document.getElementById('search-button').addEventListener('click', searchBooks);
+
+        // Fetch and display all books on initial load
+        window.addEventListener('load', searchBooks);
     </script>
-    </body>
+</body>
 
 </html>
