@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Book</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Update Book</h1>
+
+    <div class="button-container">
+        <a href="index.html" class="button"> <button>Back to Catalog</button></a>
+    </div>
+
+    <!-- Form to update a book -->
+    <form id="update-book-form" onsubmit="updateBook(event)">
+        <label for="book-title">Title:</label>
+        <input type="text" id="book-title" name="title" placeholder="Enter the book title" required><br><br>
+
+        <label for="book-publisher">New Publisher:</label>
+        <input type="text" id="book-publisher" name="publisher" placeholder="Enter the new publisher"><br><br>
+
+        <label for="book-isrented">Is Rented?</label>
+        <select id="book-isrented" name="isrented">
+            <option value="">No Change</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        <button type="submit">Update Book</button>
+    </form>
+
+    <script>
+        // Function to handle book updates
+        async function updateBook(event) {
+            event.preventDefault(); // Prevent form submission from refreshing the page
+
+            const title = document.getElementById('book-title').value;
+            const publisher = document.getElementById('book-publisher').value;
+            const isrented = document.getElementById('book-isrented').value;
+
+            // Prepare data for the backend
+            const updateData = {
+                title,  // Book to update
+                ...(publisher && { publisher }), // Include publisher if provided
+                ...(isrented !== "" && { isrented: parseInt(isrented) }) // Include isrented if selected
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/update-book', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Book updated successfully!');
+                    // Optionally redirect to catalog or clear the form
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Error updating book: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

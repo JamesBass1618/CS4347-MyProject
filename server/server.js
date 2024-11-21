@@ -129,6 +129,51 @@ app.delete('/delete-book', (req, res) => {
     });
 });
 
+// Endpoint to update book details (e.g., publisher, rental status)
+app.patch('/update-book', (req, res) => {
+    const { title, publisher, isrented } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ success: false, message: 'Title is required for update' });
+    }
+
+    // Dynamically build the update query based on provided fields
+    const updates = [];
+    const params = [];
+
+    if (publisher) {
+        updates.push('Publisher = ?');
+        params.push(publisher);
+    }
+
+    if (isrented !== undefined) {
+        updates.push('IsRented = ?');
+        params.push(isrented);
+    }
+
+    if (updates.length === 0) {
+        return res.status(400).json({ success: false, message: 'No update fields provided' });
+    }
+
+    params.push(title); // Add the title to the parameters for the WHERE clause
+
+    const query = `UPDATE Book SET ${updates.join(', ')} WHERE Title = ?`;
+
+    db.query(query, params, (err, result) => {
+        if (err) {
+            console.error('Error updating book:', err);
+            return res.status(500).json({ success: false, message: 'Failed to update the book' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Book not found' });
+        }
+
+        res.json({ success: true, message: 'Book updated successfully!' });
+    });
+});
+
+
 
 
 // Start server
