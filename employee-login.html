@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <title>Employee Login</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Employee Login</h2>
+        <a href="index.html" class="button"> <button>Return Home</button></a>
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <input type="text" name="username" id="username" placeholder="Username" required>
+            <input type="password" name="password" id="password" placeholder="Password" required>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <!-- Employee Dashboard -->
+    <div id="emp_dashboard" class="dashboard-container" style="display: none;">
+        <h2>Login Successful: Employee123</h2>
+        <a href="index.html" class="button"> <button>Return Home</button></a>
+        <p>Welcome Employee123.</p>
+        <p>Employee Information</p>
+        <p>Employee Name: FName Middle_I LName</p>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>EmpID</th>
+                    <th>PhoneNum</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Employee Dependents</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Child Name</th>
+                    <th>Birthdate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Employee Works For and/or Manages</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Section</th>
+                    <th>Kids/Adult</th>
+                    <th>Genre</th>
+                    <th>Manager (T/F)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch('http://localhost:3000/employee-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show the employee dashboard if login is successful
+                    document.getElementById("emp_dashboard").style.display = "block";
+                    document.querySelector(".login-container").style.display = "none";
+
+                    document.querySelector('.dashboard-container h2').textContent = `Login Successful: ${data.employee.FName} ${data.employee.LName}`;
+                    document.querySelector('.dashboard-container p').textContent = `Welcome ${data.employee.FName} ${data.employee.LName}`;
+
+                    // Update the "Guest Name" text with actual user data
+                    const empNameElement = document.querySelector('.dashboard-container p:nth-of-type(2)');
+                    empNameElement.textContent = `Employee Name: ${data.employee.FName} ${data.employee.MiddleI} ${data.employee.LName}`;
+
+                    // Update the table with user info
+                    const empTable = document.querySelector('table tbody');
+                    const row = empTable.insertRow(0);
+                    row.insertCell(0).textContent = data.employee.UserID;
+                    row.insertCell(1).textContent = data.employee.PhoneNum;
+                    row.insertCell(2).textContent = data.employee.Email;
+                } else {
+                    alert(data.message); // Show error message if invalid credentials
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>

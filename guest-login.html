@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <title>User Login</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <!-- Guest Login Form -->
+        <h2>User Login</h2>
+        <a href="index.html" class="button"> <button>Return Home</button></a>
+        <form id="guest-login-form" onsubmit="guest_handleLogin(event)">
+            <input type="text" id="guest-username" name="username" placeholder="Username" required>
+            <input type="password" id="guest-password" name="password" placeholder="Password" required>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <!-- Guest Dashboard -->
+    <div id="guest_dashboard" class="dashboard-container" style="display: none;">
+        <h2>Login Successful: User_Name</h2>
+        <a href="index.html" class="button"> <button>Return Home</button></a>
+        <p>Welcome User_Name.</p>
+        <p> Guest Name: FName Middle_I LName</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>UserID</th>
+                    <th>PhoneNum</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <!--Row 1-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        <p></p>
+        <p>Rented Items</p>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Book_ID</th>
+                    <th>Rent_Date</th>
+                    <th>Return_Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <!--Row 1-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <!--Row 2-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <!--Row 3-->
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!--Guest Login Verification-->
+    <script>
+        async function guest_handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("guest-username").value;
+            const password = document.getElementById("guest-password").value;
+
+            try {
+                const response = await fetch('http://localhost:3000/guest-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show dashboard if login is successful
+                    document.getElementById("guest_dashboard").style.display = "block";
+                    document.querySelector(".login-container").style.display = "none";
+
+                    // Update login message and user info
+                    document.querySelector('.dashboard-container h2').textContent = `Login Successful: ${data.user.FName} ${data.user.LName}`;
+                    document.querySelector('.dashboard-container p').textContent = `Welcome, ${data.user.FName} ${data.user.LName}.`;
+
+                    // Update the "Guest Name" text with actual user data
+                    const guestNameElement = document.querySelector('.dashboard-container p:nth-of-type(2)');
+                    guestNameElement.textContent = `Guest Name: ${data.user.FName} ${data.user.MiddleI} ${data.user.LName}`;
+
+                    // Update the table with user info
+                    const userTable = document.querySelector('table tbody');
+                    const row = userTable.insertRow(0);
+                    row.insertCell(0).textContent = data.user.UserID;
+                    row.insertCell(1).textContent = data.user.PhoneNum;
+                    row.insertCell(2).textContent = data.user.Email;
+
+                } else {
+                    alert(data.message); // Show error message
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>
