@@ -216,6 +216,52 @@ app.patch('/update-book', (req, res) => {
     });
 });
 
+app.post('/rent-book', (req, res) => {
+    console.log('Received rental data:', req.body); // Log
+    let { title, userID, rentDate, returnDate } = req.body;
+
+    // Ensure the correct data types:
+    title = String(title); // Ensure title is a string
+    userID = parseInt(userID); // Ensure userID is an integer
+    rentDate = new Date(rentDate); // Convert rentDate to Date object
+    returnDate = new Date(returnDate); // Convert returnDate to Date object
+
+    // Check if the selected book is available for rent (IsRented = 0)
+    const checkQuery = `SELECT * FROM Book WHERE Title = ? AND IsRented = 0`;
+    db.query(checkQuery, [title], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: 'Database error occurred while checking book availability' });
+        }
+
+        if (result.length === 0) {
+            return res.status(400).json({ success: false, message: 'This book is either unavailable or already rented' });
+        }
+
+        // Now rent the book (update IsRented to 1)
+        const rentQuery = `UPDATE Book SET IsRented = 1 WHERE Title = ?`;
+        db.query(rentQuery, [title], (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ success: false, message: 'Failed to rent the book' });
+            }
+
+            // Insert rental record into rental table (assuming we have a separate rental table)
+            const rentalQuery = `
+                INSERT INTO RentReturn (UserID, BookTitle, RentDate, ReturnDate)
+                VALUES (?, ?, ?, ?)
+            `;
+            db.query(rentalQuery, [userID, title, rentDate, returnDate], (err, result) => {
+                //if (err) {
+                    //console.error(err);
+                    //return res.status(500).json({ success: false, message: 'Failed to log rental transaction' });
+                //}
+                res.json({ success: true, message: 'Book rented successfully!' });
+            });
+        });
+    });
+});
+
 
 
 // Start server
@@ -223,3 +269,5 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+

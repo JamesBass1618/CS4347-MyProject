@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent a Book</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Rent a Book</h1>
+
+    <div class="button-container">
+        <a href="index.html" class="button"> <button>Back to Catalog</button></a>
+    </div>
+
+    <form id="rent-book-form" onsubmit="rentBook(event)">
+        <label for="book-title">Select Book Title:</label>
+        <select id="book-title" name="title" required>
+            <option value="Harry Potter and the Sorcerer's Stone">Harry Potter and the Sorcerer's Stone</option>
+            <option value="1984">1984</option>
+            <option value="The Hobbit">The Hobbit</option>
+            <option value="The Catcher in the Rye">The Catcher in the Rye</option>
+            <option value="Harry Potter and the Chamber of Secrets">Harry Potter and the Chamber of Secrets</option>
+            <option value="Animal Farm">Animal Farm</option>
+            <option value="The Fellowship of the Ring">The Fellowship of the Ring</option>
+            <option value="To Kill a Mockingbird">To Kill a Mockingbird</option>
+            <option value="Tender Is the Night">Tender Is the Night</option>
+            <option value="Frankenstein">Frankenstein</option>
+            <option value="And Then There Were None">And Then There Were None</option>
+            <option value="Sense and Sensibility">Sense and Sensibility</option>
+            <option value="Carrie">Carrie</option>
+            <option value="Homo Deus: A Brief History of Tomorrow">Homo Deus: A Brief History of Tomorrow</option>
+        </select><br><br>
+
+        <label for="user-id">User ID:</label>
+        <input type="number" id="user-id" name="userID" required><br><br>
+
+        <label for="rent-date">Rent Date:</label>
+        <input type="date" id="rent-date" name="rentDate" required><br><br>
+
+        <label for="return-date">Return Date:</label>
+        <input type="date" id="return-date" name="returnDate" required><br><br>
+
+        <button type="submit">Rent Book</button>
+    </form>
+
+    <script>
+        async function rentBook(event) {
+            event.preventDefault(); // Prevent form from refreshing the page
+
+            const title = document.getElementById('book-title').value;
+            const userID = document.getElementById('user-id').value;
+            const rentDate = document.getElementById('rent-date').value;
+            const returnDate = document.getElementById('return-date').value;
+
+            const rentalData = {
+                title,
+                userID,
+                rentDate,
+                returnDate
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/rent-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(rentalData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Book rented successfully!');
+                    //window.location.href = 'index.html'; // Redirect to catalog page after renting
+                } else {
+                    alert('Error renting book: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    </script>
+</body>
+
+</html>
