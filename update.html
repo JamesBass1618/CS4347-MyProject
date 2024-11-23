@@ -23,12 +23,12 @@
         <label for="book-publisher">New Publisher:</label>
         <input type="text" id="book-publisher" name="publisher" placeholder="Enter the new publisher"><br><br>
 
-        <label for="book-isrented">Is Rented?</label>
+        <!-- <label for="book-isrented">Is Rented?</label>
         <select id="book-isrented" name="isrented">
             <option value="">No Change</option>
             <option value="1">Yes</option>
             <option value="0">No</option>
-        </select><br><br>
+        </select><br><br> -->
 
         <button type="submit">Update Book</button>
     </form>
@@ -40,13 +40,13 @@
 
             const title = document.getElementById('book-title').value;
             const publisher = document.getElementById('book-publisher').value;
-            const isrented = document.getElementById('book-isrented').value;
+            //const isrented = document.getElementById('book-isrented').value;
 
             // Prepare data for the backend
             const updateData = {
                 title,  // Book to update
-                ...(publisher && { publisher }), // Include publisher if provided
-                ...(isrented !== "" && { isrented: parseInt(isrented) }) // Include isrented if selected
+                ...(publisher && { publisher }) // Include publisher if provided
+                //...(isrented !== "" && { isrented: parseInt(isrented) }) // Include isrented if selected
             };
 
             try {

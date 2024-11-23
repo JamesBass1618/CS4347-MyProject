@@ -172,7 +172,7 @@ app.delete('/delete-book', (req, res) => {
 });
 
 app.patch('/update-book', (req, res) => {
-    const { title, publisher, isrented } = req.body;
+    const { title, publisher } = req.body;
 
     // Validate that at least the title is provided
     if (!title) {
@@ -180,31 +180,25 @@ app.patch('/update-book', (req, res) => {
     }
 
     // Dynamically build the `SET` clause based on provided fields
-    const updates = [];
-    const params = [];
-
+    let updates = '';
     if (publisher !== undefined) {
-        updates.push('Publisher = ?');
-        params.push(publisher);
+        updates += `Publisher = '${publisher}'`;  // Vulnerable part
     }
 
-    if (isrented !== undefined) {
-        updates.push('IsRented = ?');
-        params.push(isrented);
-    }
+    /*if (isrented !== undefined) {
+        if (updates) updates += ', ';  // Adding a comma if previous fields exist
+        updates += `IsRented = ${isrented}`;  // Vulnerable part
+    }*/
 
-    if (updates.length === 0) {
+    if (!updates) {
         return res.status(400).json({ success: false, message: 'No update fields provided' });
     }
 
-    // Add the `title` to the `params` array for the WHERE clause
-    params.push(title);
+    // Construct the SQL query dynamically (vulnerable to injection)
+    const query = `UPDATE Book SET Publisher = '${publisher}' WHERE Title = '${title}'`;  // Vulnerable part
 
-    // Construct the SQL query dynamically
-    const query = `UPDATE Book SET ${updates.join(', ')} WHERE Title = ?`;
-
-    // Execute the query using prepared statements
-    db.query(query, params, (err, result) => {
+    // Execute the query without prepared statements
+    db.query(query, (err, result) => {
         if (err) {
             console.error('Error updating book:', err);
             return res.status(500).json({ success: false, message: 'Failed to update the book' });
@@ -217,6 +211,7 @@ app.patch('/update-book', (req, res) => {
         res.json({ success: true, message: 'Book updated successfully!' });
     });
 });
+
 
 app.post('/rent-book', (req, res) => {
     console.log('Received rental data:', req.body); // Log
