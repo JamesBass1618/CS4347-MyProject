@@ -179,21 +179,6 @@ app.patch('/update-book', (req, res) => {
         return res.status(400).json({ success: false, message: 'Title is required for update' });
     }
 
-    // Dynamically build the `SET` clause based on provided fields
-    let updates = '';
-    if (publisher !== undefined) {
-        updates += `Publisher = '${publisher}'`;  // Vulnerable part
-    }
-
-    /*if (isrented !== undefined) {
-        if (updates) updates += ', ';  // Adding a comma if previous fields exist
-        updates += `IsRented = ${isrented}`;  // Vulnerable part
-    }*/
-
-    if (!updates) {
-        return res.status(400).json({ success: false, message: 'No update fields provided' });
-    }
-
     // Construct the SQL query dynamically (vulnerable to injection)
     const query = `UPDATE Book SET Publisher = '${publisher}' WHERE Title = '${title}'`;  // Vulnerable part
 
