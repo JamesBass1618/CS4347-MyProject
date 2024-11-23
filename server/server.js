@@ -23,9 +23,10 @@ db.connect((err) => {
 // Employee login endpoint
 app.post('/employee-login', (req, res) => {
     const { username, password } = req.body;
-    const query = 'SELECT * FROM employee WHERE Email = ? AND PhoneNum = ?';
+    // Vulnerable query construction
+    const query = `SELECT * FROM employee WHERE Email = '${username}' AND PhoneNum = '${password}'`;
 
-    db.query(query, [username, password], (err, result) => {
+    db.query(query, (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.length > 0) {
             res.json({ success: true, employee: result[0] });
@@ -34,6 +35,7 @@ app.post('/employee-login', (req, res) => {
         }
     });
 });
+
 
 // Guest login endpoint
 app.post('/guest-login', (req, res) => {
@@ -220,13 +222,11 @@ app.post('/rent-book', (req, res) => {
     console.log('Received rental data:', req.body); // Log
     let { title, userID, rentDate, returnDate } = req.body;
 
-    // Ensure the correct data types:
-    title = String(title); // Ensure title is a string
-    userID = parseInt(userID); // Ensure userID is an integer
-    rentDate = new Date(rentDate); // Convert rentDate to Date object
-    returnDate = new Date(returnDate); // Convert returnDate to Date object
+    title = String(title); 
+    userID = parseInt(userID); 
+    rentDate = new Date(rentDate); 
+    returnDate = new Date(returnDate); 
 
-    // Check if the selected book is available for rent (IsRented = 0)
     const checkQuery = `SELECT * FROM Book WHERE Title = ? AND IsRented = 0`;
     db.query(checkQuery, [title], (err, result) => {
         if (err) {
@@ -238,7 +238,7 @@ app.post('/rent-book', (req, res) => {
             return res.status(400).json({ success: false, message: 'This book is either unavailable or already rented' });
         }
 
-        // Now rent the book (update IsRented to 1)
+        // Now rent the book 
         const rentQuery = `UPDATE Book SET IsRented = 1 WHERE Title = ?`;
         db.query(rentQuery, [title], (err, result) => {
             if (err) {
@@ -246,7 +246,7 @@ app.post('/rent-book', (req, res) => {
                 return res.status(500).json({ success: false, message: 'Failed to rent the book' });
             }
 
-            // Insert rental record into rental table (assuming we have a separate rental table)
+            // Insert rental record into RentReturn table
             const rentalQuery = `
                 INSERT INTO RentReturn (UserID, BookTitle, RentDate, ReturnDate)
                 VALUES (?, ?, ?, ?)
